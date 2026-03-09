@@ -117,7 +117,7 @@ function StudentDashboard() {
           style={styles.backButton}
           onClick={() => {
             localStorage.removeItem("loggedInUser");
-            navigate("/login", { replace: true });
+            navigate("/", { replace: true });
           }}
         >
           Logout

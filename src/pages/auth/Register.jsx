@@ -8,7 +8,6 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
-  const [batch, setBatch] = useState(""); // Only for students
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -32,33 +31,12 @@ function Register() {
       email,
       password,
       role,
-      batch: role === "student" ? batch : null
+      batch: null // student batch will be assigned later
     };
 
-    // Save user
     const updatedUsers = [...users, newUser];
+
     localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-    // If student, add to batches
-    if (role === "student") {
-      const batches = JSON.parse(localStorage.getItem("batches")) || [];
-      const batchIndex = batches.findIndex((b) => b.name === batch);
-
-      if (batchIndex !== -1) {
-        // Batch exists, add student
-        if (!batches[batchIndex].students) batches[batchIndex].students = [];
-        batches[batchIndex].students.push(name);
-      } else {
-        // Batch does not exist, create it
-        batches.push({
-          name: batch,
-          mentor: "TBD", // Can update mentor later
-          students: [name]
-        });
-      }
-
-      localStorage.setItem("batches", JSON.stringify(batches));
-    }
 
     alert("Registration successful!");
     navigate("/");
@@ -164,17 +142,6 @@ function Register() {
             <option value="student">Student</option>
             <option value="mentor">Mentor</option>
           </select>
-
-          {role === "student" && (
-            <input
-              style={styles.input}
-              type="text"
-              placeholder="Batch Name"
-              value={batch}
-              onChange={(e) => setBatch(e.target.value)}
-              required
-            />
-          )}
 
           <button style={styles.button} type="submit">
             Register

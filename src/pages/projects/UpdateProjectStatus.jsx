@@ -1,141 +1,146 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 function UpdateProjectStatus() {
 
   const navigate = useNavigate();
-  const [projects, setProjects] = useState([]);
 
-  const styles = {
-    container: {
-      padding: "30px",
-      fontFamily: "Arial",
-      backgroundColor: "#f4f6f9",
-      minHeight: "100vh"
-    },
-    title: {
-      textAlign: "center",
-      marginBottom: "30px"
-    },
-    card: {
-      background: "white",
-      padding: "20px",
-      borderRadius: "10px",
-      marginBottom: "15px",
-      boxShadow: "0 3px 8px rgba(0,0,0,0.1)"
-    },
-    select: {
-      padding: "6px",
-      marginTop: "8px"
-    },
-    button: {
-      marginTop: "10px",
-      padding: "8px 12px",
-      border: "none",
-      backgroundColor: "#4CAF50",
-      color: "white",
-      borderRadius: "5px",
-      cursor: "pointer"
-    },
-    backButton: {
-      marginTop: "30px",
-      padding: "10px",
-      border: "none",
-      backgroundColor: "#888",
-      color: "white",
-      borderRadius: "5px",
-      cursor: "pointer"
-    }
-  };
+  const [batches, setBatches] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState("");
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
 
-    const loggedUser =
-      JSON.parse(localStorage.getItem("loggedInUser"));
-
-    const batches =
+    const storedBatches =
       JSON.parse(localStorage.getItem("batches")) || [];
 
-    const projects =
-      JSON.parse(localStorage.getItem("projects")) || [];
+    // get unique batch names
+    const uniqueBatches = [
+      ...new Set(storedBatches.map((b) => b.name))
+    ];
 
-    // get mentor batches
-    const mentorBatches = batches
-      .filter((b) => b.mentor === loggedUser.name)
-      .map((b) => b.name);
-
-    // filter projects of those batches
-    const mentorProjects = projects.filter((p) =>
-      mentorBatches.includes(p.batch)
-    );
-
-    setProjects(mentorProjects);
+    setBatches(uniqueBatches);
 
   }, []);
 
-  const updateStatus = (index, newStatus) => {
+  const updateProgress = () => {
 
-    const allProjects =
+    const storedProjects =
       JSON.parse(localStorage.getItem("projects")) || [];
 
-    const updatedProjects = [...allProjects];
+    const updatedProjects = storedProjects.map((p) => {
 
-    const projectName = projects[index].title;
+      if (p.batch === selectedBatch) {
+        return { ...p, status };
+      }
 
-    const projectIndex = updatedProjects.findIndex(
-      (p) => p.title === projectName
+      return p;
+
+    });
+
+    localStorage.setItem(
+      "projects",
+      JSON.stringify(updatedProjects)
     );
 
-    if (projectIndex !== -1) {
-      updatedProjects[projectIndex].status = newStatus;
+    alert("Project status updated!");
+
+    navigate(-1); // go back to previous page
+
+  };
+
+  const styles = {
+
+    container: {
+      padding: "40px",
+      fontFamily: "Arial",
+      background: "#f4f6f9",
+      minHeight: "100vh"
+    },
+
+    card: {
+      background: "white",
+      padding: "25px",
+      maxWidth: "400px",
+      margin: "auto",
+      borderRadius: "10px",
+      boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+    },
+
+    input: {
+      width: "100%",
+      padding: "8px",
+      marginBottom: "12px"
+    },
+
+    button: {
+      padding: "10px",
+      background: "#4CAF50",
+      color: "white",
+      border: "none",
+      borderRadius: "5px",
+      cursor: "pointer"
     }
-
-    localStorage.setItem("projects", JSON.stringify(updatedProjects));
-
-    alert("Project status updated");
 
   };
 
   return (
+
     <div style={styles.container}>
 
-      <h2 style={styles.title}>Update Project Status</h2>
+      <div style={styles.card}>
 
-      {projects.length === 0 ? (
-        <p>No projects found for your batches</p>
-      ) : (
-        projects.map((p, i) => (
+        <h2>Update Project Status</h2>
 
-          <div key={i} style={styles.card}>
+        {/* Batch Dropdown */}
 
-            <h3>{p.title}</h3>
-            <p><b>Batch:</b> {p.batch}</p>
-            <p><b>Current Status:</b> {p.status}</p>
+        <select
+          style={styles.input}
+          value={selectedBatch}
+          onChange={(e) =>
+            setSelectedBatch(e.target.value)
+          }
+        >
 
-            <select
-              style={styles.select}
-              onChange={(e) =>
-                updateStatus(i, e.target.value)
-              }
-            >
-              <option>Pending</option>
-              <option>In Progress</option>
-              <option>Completed</option>
-            </select>
+          <option value="">Select Batch</option>
 
-          </div>
+          {batches.map((batch, index) => (
+            <option key={index} value={batch}>
+              {batch}
+            </option>
+          ))}
 
-        ))
-      )}
+        </select>
 
-      <button
-        style={styles.backButton}
-        onClick={() => navigate(-1)}
-      >
-        Back
-      </button>
+        {/* Status Dropdown */}
+
+        <select
+          style={styles.input}
+          value={status}
+          onChange={(e) =>
+            setStatus(e.target.value)
+          }
+        >
+
+          <option value="">Select Status</option>
+          <option value="Started">Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Testing">Testing</option>
+          <option value="Completed">Completed</option>
+
+        </select>
+
+        <button
+          style={styles.button}
+          onClick={updateProgress}
+        >
+          Update Status
+        </button>
+
+      </div>
 
     </div>
+
   );
 }
 

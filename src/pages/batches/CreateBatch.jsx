@@ -7,6 +7,7 @@ function CreateBatch() {
 
   const [batchName, setBatchName] = useState("");
   const [mentor, setMentor] = useState("");
+  const [projectName, setProjectName] = useState("");
   const [studentCount, setStudentCount] = useState(0);
   const [students, setStudents] = useState([]);
 
@@ -27,7 +28,7 @@ function CreateBatch() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!batchName || !mentor) {
+    if (!batchName || !mentor || !projectName) {
       alert("Fill all fields");
       return;
     }
@@ -35,6 +36,7 @@ function CreateBatch() {
     const newBatch = {
       name: batchName,
       mentor: mentor,
+      project: projectName,
       students: students
     };
 
@@ -121,6 +123,15 @@ function CreateBatch() {
             onChange={(e) => setMentor(e.target.value)}
           />
 
+          {/* NEW PROJECT NAME FIELD */}
+          <input
+            style={styles.input}
+            type="text"
+            placeholder="Project Name"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+          />
+
           <input
             style={styles.input}
             type="number"
@@ -128,7 +139,6 @@ function CreateBatch() {
             onChange={handleStudentCount}
           />
 
-          {/* Show student count */}
           {studentCount > 0 && (
             <p style={styles.countText}>
               Total Students: {studentCount}

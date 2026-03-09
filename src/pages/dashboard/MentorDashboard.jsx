@@ -1,8 +1,17 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 function MentorDashboard() {
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (!loggedInUser || loggedInUser.role !== "mentor") {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
 
   const styles = {
     container: {
@@ -61,34 +70,33 @@ function MentorDashboard() {
 
       <div style={styles.cardContainer}>
 
-        {/* UPDATE PROJECT STATUS CARD */}
+        {/* CREATE BATCH */}
         <div style={styles.card}>
-          <h3>Update Project Status</h3>
-          <p>Change project progress</p>
+          <h3>Create Batch</h3>
+          <p>Create a new student batch</p>
 
           <button
             style={styles.button}
-            onClick={() => navigate("/update-project")}
+            onClick={() => navigate("/create-batch")}
           >
-            Update Status
+            Create Batch
           </button>
         </div>
 
-
-        {/* STUDENTS CARD */}
+        {/* MANAGE BATCHES */}
         <div style={styles.card}>
-          <h3>Students Under Supervision</h3>
+          <h3>Manage Batches</h3>
+          <p>View and manage batches</p>
 
           <button
             style={styles.button}
-            onClick={() => navigate("/students")}
+            onClick={() => navigate("/batches")}
           >
-            View Students
+            Manage Batches
           </button>
         </div>
 
-
-        {/* PROJECTS CARD */}
+        {/* VIEW PROJECTS */}
         <div style={styles.card}>
           <h3>Projects Progress</h3>
           <p>Track project completion</p>

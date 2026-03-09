@@ -2,34 +2,46 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function BatchDetails() {
+
   const { batchName } = useParams();
   const navigate = useNavigate();
 
   const [batch, setBatch] = useState(null);
-  const [projects, setProjects] = useState([]);
+  const [status, setStatus] = useState("Not Updated");
 
-  // Fetch batch and project data
   useEffect(() => {
-    const fetchData = () => {
-      const batches = JSON.parse(localStorage.getItem("batches")) || [];
-      const selectedBatch = batches.find((b) => b.name === batchName);
-      setBatch(selectedBatch);
 
-      const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-      const batchProjects = storedProjects.filter((p) => p.batch === batchName);
-      setProjects(batchProjects);
-    };
+    const batches =
+      JSON.parse(localStorage.getItem("batches")) || [];
 
-    fetchData();
+    const selectedBatch = batches.find(
+      (b) => b.name === batchName
+    );
+
+    setBatch(selectedBatch);
+
+    const projects =
+      JSON.parse(localStorage.getItem("projects")) || [];
+
+    const batchProject = projects.find(
+      (p) => p.batch === batchName
+    );
+
+    if (batchProject) {
+      setStatus(batchProject.status);
+    }
+
   }, [batchName]);
 
   const styles = {
+
     container: {
       padding: "40px",
       background: "#f4f6f9",
       minHeight: "100vh",
       fontFamily: "Arial"
     },
+
     card: {
       background: "white",
       padding: "25px",
@@ -38,22 +50,26 @@ function BatchDetails() {
       margin: "auto",
       boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
     },
+
     listItem: {
       background: "#e3f2fd",
-      padding: "8px",
-      marginBottom: "5px",
+      padding: "10px",
+      marginBottom: "8px",
       borderRadius: "5px",
       listStyle: "none"
     },
-    addButton: {
-      padding: "10px 14px",
-      border: "none",
-      background: "#4CAF50",
-      color: "white",
+
+    sectionTitle: {
+      marginTop: "20px"
+    },
+
+    statusBox: {
+      background: "#fff3cd",
+      padding: "10px",
       borderRadius: "6px",
-      cursor: "pointer",
       marginTop: "10px"
     },
+
     backButton: {
       marginTop: "20px",
       padding: "10px 14px",
@@ -62,61 +78,60 @@ function BatchDetails() {
       color: "white",
       borderRadius: "6px",
       cursor: "pointer"
-    },
-    sectionTitle: {
-      marginTop: "20px"
     }
+
   };
 
   if (!batch) return <p>Batch not found</p>;
 
   return (
+
     <div style={styles.container}>
+
       <div style={styles.card}>
+
         <h2>{batch.name}</h2>
-        <p><strong>Mentor:</strong> {batch.mentor}</p>
+
+        <p>
+          <strong>Mentor:</strong> {batch.mentor}
+        </p>
+
+        <p>
+          <strong>Project:</strong> {batch.project}
+        </p>
+
+        {/* STATUS */}
+        <div style={styles.statusBox}>
+          <strong>Status:</strong> {status}
+        </div>
 
         {/* Students */}
+
         <h3 style={styles.sectionTitle}>Students</h3>
-        {batch.students && batch.students.length === 0 ? (
+
+        {batch.students?.length === 0 ? (
           <p>No students yet</p>
         ) : (
           <ul>
             {batch.students?.map((s, i) => (
-              <li key={i} style={styles.listItem}>{s}</li>
+              <li key={i} style={styles.listItem}>
+                {s}
+              </li>
             ))}
           </ul>
         )}
 
-        {/* Projects */}
-        <h3 style={styles.sectionTitle}>Projects</h3>
-        {projects.length === 0 ? (
-          <p>No projects added</p>
-        ) : (
-          <ul>
-            {projects.map((p, i) => (
-              <li key={i} style={styles.listItem}>{p.projectName}</li>
-            ))}
-          </ul>
-        )}
-
-        {/* Add Project Button */}
-        <button
-          style={styles.addButton}
-          onClick={() => navigate(`/project-details/${batchName}`)}
-        >
-          Add Project
-        </button>
-
-        {/* Back Button */}
         <button
           style={styles.backButton}
           onClick={() => navigate(-1)}
         >
           Back
         </button>
+
       </div>
+
     </div>
+
   );
 }
 
