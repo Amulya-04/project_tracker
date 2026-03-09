@@ -8,19 +8,18 @@ function BatchDetails() {
   const [batch, setBatch] = useState(null);
   const [projects, setProjects] = useState([]);
 
-  // Fetch batch and projects from localStorage
-  const fetchData = () => {
-    const batches = JSON.parse(localStorage.getItem("batches")) || [];
-    const selectedBatch = batches.find((b) => b.name === batchName);
-    setBatch(selectedBatch);
-
-    const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-    const batchProjects = storedProjects.filter((p) => p.batch === batchName);
-    setProjects(batchProjects);
-  };
-
-  // Run on mount
+  // Fetch batch and project data
   useEffect(() => {
+    const fetchData = () => {
+      const batches = JSON.parse(localStorage.getItem("batches")) || [];
+      const selectedBatch = batches.find((b) => b.name === batchName);
+      setBatch(selectedBatch);
+
+      const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
+      const batchProjects = storedProjects.filter((p) => p.batch === batchName);
+      setProjects(batchProjects);
+    };
+
     fetchData();
   }, [batchName]);
 
@@ -79,11 +78,11 @@ function BatchDetails() {
 
         {/* Students */}
         <h3 style={styles.sectionTitle}>Students</h3>
-        {batch.students.length === 0 ? (
+        {batch.students && batch.students.length === 0 ? (
           <p>No students yet</p>
         ) : (
           <ul>
-            {batch.students.map((s, i) => (
+            {batch.students?.map((s, i) => (
               <li key={i} style={styles.listItem}>{s}</li>
             ))}
           </ul>

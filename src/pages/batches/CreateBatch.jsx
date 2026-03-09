@@ -11,7 +11,7 @@ function CreateBatch() {
   const [students, setStudents] = useState([]);
 
   const handleStudentCount = (e) => {
-    const count = parseInt(e.target.value);
+    const count = parseInt(e.target.value) || 0;
     setStudentCount(count);
 
     const studentArray = new Array(count).fill("");
@@ -38,8 +38,7 @@ function CreateBatch() {
       students: students
     };
 
-    const batches =
-      JSON.parse(localStorage.getItem("batches")) || [];
+    const batches = JSON.parse(localStorage.getItem("batches")) || [];
 
     batches.push(newBatch);
 
@@ -90,6 +89,10 @@ function CreateBatch() {
       border: "none",
       borderRadius: "5px",
       cursor: "pointer"
+    },
+    countText: {
+      marginBottom: "10px",
+      fontWeight: "bold"
     }
   };
 
@@ -124,6 +127,13 @@ function CreateBatch() {
             placeholder="Number of Students"
             onChange={handleStudentCount}
           />
+
+          {/* Show student count */}
+          {studentCount > 0 && (
+            <p style={styles.countText}>
+              Total Students: {studentCount}
+            </p>
+          )}
 
           {students.map((student, index) => (
             <input
