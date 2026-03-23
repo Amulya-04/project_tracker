@@ -2,136 +2,165 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function BatchDetails() {
-
   const { batchName } = useParams();
   const navigate = useNavigate();
 
   const [batch, setBatch] = useState(null);
-  const [status, setStatus] = useState("Not Updated");
+  const [project, setProject] = useState(null);
 
   useEffect(() => {
-
-    const batches =
-      JSON.parse(localStorage.getItem("batches")) || [];
-
-    const selectedBatch = batches.find(
-      (b) => b.name === batchName
-    );
-
+    const batches = JSON.parse(localStorage.getItem("batches")) || [];
+    const selectedBatch = batches.find((b) => b.name === batchName);
     setBatch(selectedBatch);
 
-    const projects =
-      JSON.parse(localStorage.getItem("projects")) || [];
-
-    const batchProject = projects.find(
-      (p) => p.batch === batchName
-    );
-
-    if (batchProject) {
-      setStatus(batchProject.status);
-    }
-
+    const projects = JSON.parse(localStorage.getItem("projects")) || [];
+    // Find latest project for this batch
+    const batchProject = projects.find((p) => p.batch === batchName);
+    if (batchProject) setProject(batchProject);
   }, [batchName]);
 
-  const styles = {
+  const getStatusColor = (status) => {
+    const map = {
+      Completed: "#d4edda",
+      "In Progress": "#cce5ff",
+      Testing: "#fff3cd",
+      Started: "#e2d9f3",
+      Pending: "#f8d7da",
+      "Not Updated": "#e9ecef",
+    };
+    return map[status] || "#e9ecef";
+  };
 
+  const styles = {
     container: {
       padding: "40px",
       background: "#f4f6f9",
       minHeight: "100vh",
-      fontFamily: "Arial"
+      fontFamily: "Arial",
     },
-
     card: {
       background: "white",
-      padding: "25px",
+      padding: "30px",
       borderRadius: "10px",
-      maxWidth: "500px",
+      maxWidth: "520px",
       margin: "auto",
-      boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+      boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
     },
-
+    sectionTitle: {
+      marginTop: "24px",
+      marginBottom: "10px",
+      borderBottom: "1px solid #eee",
+      paddingBottom: "6px",
+    },
     listItem: {
       background: "#e3f2fd",
-      padding: "10px",
+      padding: "10px 14px",
       marginBottom: "8px",
       borderRadius: "5px",
-      listStyle: "none"
+      listStyle: "none",
     },
-
-    sectionTitle: {
-      marginTop: "20px"
-    },
-
     statusBox: {
-      background: "#fff3cd",
-      padding: "10px",
+      padding: "12px 16px",
       borderRadius: "6px",
-      marginTop: "10px"
+      marginTop: "10px",
+      fontWeight: "bold",
     },
-
+    infoRow: {
+      display: "flex",
+      gap: "8px",
+      marginBottom: "8px",
+    },
     backButton: {
-      marginTop: "20px",
-      padding: "10px 14px",
+      marginTop: "24px",
+      padding: "10px 18px",
       border: "none",
       background: "#607D8B",
       color: "white",
       borderRadius: "6px",
-      cursor: "pointer"
-    }
-
+      cursor: "pointer",
+    },
+    updateButton: {
+      marginTop: "24px",
+      marginLeft: "10px",
+      padding: "10px 18px",
+      border: "none",
+      background: "#9C27B0",
+      color: "white",
+      borderRadius: "6px",
+      cursor: "pointer",
+    },
   };
 
-  if (!batch) return <p>Batch not found</p>;
+  if (!batch) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <p>Batch <strong>"{batchName}"</strong> not found.</p>
+          <button style={styles.backButton} onClick={() => navigate(-1)}>
+            ← Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentStatus = project?.status || "Not Updated";
 
   return (
-
     <div style={styles.container}>
-
       <div style={styles.card}>
+        <h2 style={{ margin: "0 0 16px" }}>{batch.name}</h2>
 
-        <h2>{batch.name}</h2>
+        <div style={styles.infoRow}>
+          <span><strong>Mentor:</strong></span>
+          <span>{batch.mentor}</span>
+        </div>
 
-        <p>
-          <strong>Mentor:</strong> {batch.mentor}
-        </p>
+        <div style={styles.infoRow}>
+          <span><strong>Project:</strong></span>
+          <span>{batch.project}</span>
+        </div>
 
-        <p>
-          <strong>Project:</strong> {batch.project}
-        </p>
-
-        {/* STATUS */}
-        <div style={styles.statusBox}>
-          <strong>Status:</strong> {status}
+        {/* PROJECT STATUS */}
+        <div
+          style={{
+            ...styles.statusBox,
+            background: getStatusColor(currentStatus),
+          }}
+        >
+          Status: {currentStatus}
         </div>
 
         {/* Students */}
+        <h3 style={styles.sectionTitle}>
+          Students ({batch.students?.length || 0})
+        </h3>
 
-        <h3 style={styles.sectionTitle}>Students</h3>
-
-        {batch.students?.length === 0 ? (
-          <p>No students yet</p>
+        {!batch.students || batch.students.length === 0 ? (
+          <p style={{ color: "#888" }}>No students in this batch yet.</p>
         ) : (
-          <ul>
-            {batch.students?.map((s, i) => (
+          <ul style={{ padding: 0, margin: 0 }}>
+            {batch.students.map((s, i) => (
               <li key={i} style={styles.listItem}>
-                {s}
+                👤 {s}
               </li>
             ))}
           </ul>
         )}
 
-        <button
-          style={styles.backButton}
-          onClick={() => navigate(-1)}
-        >
-          Back
-        </button>
-
+        <div>
+          <button style={styles.backButton} onClick={() => navigate(-1)}>
+            ← Back
+          </button>
+          <button
+            style={styles.updateButton}
+            onClick={() => navigate(`/update-project/${batch.name}`)}
+          >
+            Update Status
+          </button>
+        </div>
       </div>
-
     </div>
-
   );
 }
 

@@ -43,13 +43,14 @@ function App() {
 
         {/* Student Routes */}
         <Route path="/students" element={<StudentList />} />
-        <Route path="/students/:id" element={<StudentProfile />} />
+        <Route path="/students/:studentName" element={<StudentProfile />} />
         <Route path="/add-student" element={<AddStudent />} />
 
         {/* Project Routes */}
         <Route path="/projects" element={<ProjectList />} />
         <Route path="/project-details/:batchName" element={<ProjectDetails />} />
-        <Route path="/update-project" element={<UpdateProjectStatus />} />
+        {/* FIX: update-project must accept :batchName param */}
+        <Route path="/update-project/:batchName" element={<UpdateProjectStatus />} />
 
       </Routes>
     </Router>

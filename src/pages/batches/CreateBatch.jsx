@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function CreateBatch() {
-
   const navigate = useNavigate();
 
   const [batchName, setBatchName] = useState("");
@@ -14,9 +13,12 @@ function CreateBatch() {
   const handleStudentCount = (e) => {
     const count = parseInt(e.target.value) || 0;
     setStudentCount(count);
-
-    const studentArray = new Array(count).fill("");
-    setStudents(studentArray);
+    // Preserve existing entries when resizing
+    setStudents((prev) => {
+      const updated = [...prev];
+      updated.length = count;
+      return Array.from({ length: count }, (_, i) => updated[i] || "");
+    });
   };
 
   const handleStudentChange = (index, value) => {
@@ -28,26 +30,34 @@ function CreateBatch() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!batchName || !mentor || !projectName) {
-      alert("Fill all fields");
+    if (!batchName.trim() || !mentor.trim() || !projectName.trim()) {
+      alert("Please fill in all required fields.");
       return;
     }
 
+    // Check for duplicate batch name
+    const batches = JSON.parse(localStorage.getItem("batches")) || [];
+    const duplicate = batches.find(
+      (b) => b.name.toLowerCase() === batchName.trim().toLowerCase()
+    );
+    if (duplicate) {
+      alert("A batch with this name already exists. Please use a different name.");
+      return;
+    }
+
+    const filledStudents = students.filter((s) => s.trim() !== "");
+
     const newBatch = {
-      name: batchName,
-      mentor: mentor,
-      project: projectName,
-      students: students
+      name: batchName.trim(),
+      mentor: mentor.trim(),
+      project: projectName.trim(),
+      students: filledStudents,
     };
 
-    const batches = JSON.parse(localStorage.getItem("batches")) || [];
-
     batches.push(newBatch);
-
     localStorage.setItem("batches", JSON.stringify(batches));
 
-    alert("Batch Created!");
-
+    alert(`Batch "${batchName}" created successfully!`);
     navigate("/batches");
   };
 
@@ -56,7 +66,7 @@ function CreateBatch() {
       padding: "40px",
       background: "#f4f6f9",
       minHeight: "100vh",
-      fontFamily: "Arial"
+      fontFamily: "Arial",
     },
     card: {
       background: "white",
@@ -64,113 +74,131 @@ function CreateBatch() {
       maxWidth: "450px",
       margin: "auto",
       borderRadius: "10px",
-      boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+      boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    },
+    label: {
+      display: "block",
+      marginBottom: "4px",
+      fontWeight: "bold",
+      fontSize: "13px",
+      color: "#555",
     },
     input: {
       width: "100%",
       padding: "10px",
-      marginBottom: "10px",
+      marginBottom: "16px",
       borderRadius: "5px",
-      border: "1px solid #ccc"
+      border: "1px solid #ccc",
+      boxSizing: "border-box",
+      fontSize: "14px",
+    },
+    divider: {
+      borderTop: "1px solid #eee",
+      margin: "16px 0",
+    },
+    studentSection: {
+      marginTop: "8px",
+    },
+    countText: {
+      marginBottom: "10px",
+      fontWeight: "bold",
+      color: "#333",
     },
     button: {
       marginTop: "10px",
-      padding: "10px",
+      padding: "11px",
       width: "100%",
       background: "#4CAF50",
       color: "white",
       border: "none",
       borderRadius: "5px",
-      cursor: "pointer"
+      cursor: "pointer",
+      fontSize: "15px",
     },
     back: {
-      marginTop: "15px",
+      marginTop: "12px",
       padding: "10px",
+      width: "100%",
       background: "#777",
       color: "white",
       border: "none",
       borderRadius: "5px",
-      cursor: "pointer"
+      cursor: "pointer",
+      fontSize: "14px",
     },
-    countText: {
-      marginBottom: "10px",
-      fontWeight: "bold"
-    }
   };
 
   return (
     <div style={styles.container}>
-
       <div style={styles.card}>
-
-        <h2>Create Batch</h2>
+        <h2 style={{ marginTop: 0 }}>Create New Batch</h2>
 
         <form onSubmit={handleSubmit}>
-
+          <label style={styles.label}>Batch Name *</label>
           <input
             style={styles.input}
             type="text"
-            placeholder="Batch Name"
+            placeholder="e.g. Batch A"
             value={batchName}
             onChange={(e) => setBatchName(e.target.value)}
           />
 
+          <label style={styles.label}>Mentor Name *</label>
           <input
             style={styles.input}
             type="text"
-            placeholder="Mentor Name"
+            placeholder="e.g. John Doe"
             value={mentor}
             onChange={(e) => setMentor(e.target.value)}
           />
 
-          {/* NEW PROJECT NAME FIELD */}
+          <label style={styles.label}>Project Name *</label>
           <input
             style={styles.input}
             type="text"
-            placeholder="Project Name"
+            placeholder="e.g. Library Management System"
             value={projectName}
             onChange={(e) => setProjectName(e.target.value)}
           />
 
+          <div style={styles.divider} />
+
+          <label style={styles.label}>Number of Students</label>
           <input
             style={styles.input}
             type="number"
-            placeholder="Number of Students"
+            placeholder="0"
+            min="0"
+            max="50"
+            value={studentCount || ""}
             onChange={handleStudentCount}
           />
 
           {studentCount > 0 && (
-            <p style={styles.countText}>
-              Total Students: {studentCount}
-            </p>
+            <div style={styles.studentSection}>
+              <p style={styles.countText}>Enter Student Names ({studentCount})</p>
+              {students.map((student, index) => (
+                <input
+                  key={index}
+                  style={styles.input}
+                  type="text"
+                  placeholder={`Student ${index + 1} Name`}
+                  value={student}
+                  onChange={(e) => handleStudentChange(index, e.target.value)}
+                />
+              ))}
+            </div>
           )}
 
-          {students.map((student, index) => (
-            <input
-              key={index}
-              style={styles.input}
-              type="text"
-              placeholder={`Student ${index + 1} Name`}
-              value={student}
-              onChange={(e) =>
-                handleStudentChange(index, e.target.value)
-              }
-            />
-          ))}
-
-          <button style={styles.button}>Create Batch</button>
-
+          <button type="submit" style={styles.button}>
+            ✓ Create Batch
+          </button>
         </form>
 
-        <button
-          style={styles.back}
-          onClick={() => navigate(-1)}
-        >
-          Back
+        <button style={styles.back} onClick={() => navigate(-1)}>
+          ← Back
         </button>
-
       </div>
-
     </div>
   );
 }

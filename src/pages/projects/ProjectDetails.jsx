@@ -12,26 +12,33 @@ function ProjectDetails() {
       return;
     }
 
-    // Get logged-in user (mentor)
     const user = JSON.parse(localStorage.getItem("loggedInUser"));
     if (!user || user.role !== "mentor") {
       alert("Only mentors can add projects");
       return;
     }
 
-    // Get existing projects
     const stored = JSON.parse(localStorage.getItem("projects")) || [];
 
-    // New project with mentor info
+    // Avoid duplicate project for same batch
+    const exists = stored.some((p) => p.batch === batchName);
+    if (exists) {
+      const overwrite = window.confirm(
+        `A project already exists for "${batchName}". Overwrite it?`
+      );
+      if (!overwrite) return;
+    }
+
+    const filtered = stored.filter((p) => p.batch !== batchName);
+
     const newProject = {
-      projectName,
+      projectName: projectName.trim(),
       batch: batchName,
-      mentor: user.name, // assign project to logged-in mentor
-      status: "Pending" // initial status
+      mentor: user.name,
+      status: "Pending",
     };
 
-    const updated = [...stored, newProject];
-    localStorage.setItem("projects", JSON.stringify(updated));
+    localStorage.setItem("projects", JSON.stringify([...filtered, newProject]));
 
     alert("Project Added!");
     navigate(`/batch-details/${batchName}`);
@@ -45,7 +52,7 @@ function ProjectDetails() {
       justifyContent: "center",
       alignItems: "center",
       fontFamily: "Arial",
-      padding: "20px"
+      padding: "20px",
     },
     card: {
       background: "white",
@@ -53,7 +60,7 @@ function ProjectDetails() {
       borderRadius: "10px",
       width: "400px",
       boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      textAlign: "center"
+      textAlign: "center",
     },
     input: {
       width: "100%",
@@ -62,7 +69,7 @@ function ProjectDetails() {
       border: "1px solid #ccc",
       fontSize: "16px",
       marginBottom: "20px",
-      boxSizing: "border-box"
+      boxSizing: "border-box",
     },
     saveButton: {
       padding: "10px 16px",
@@ -72,7 +79,7 @@ function ProjectDetails() {
       borderRadius: "6px",
       cursor: "pointer",
       fontSize: "16px",
-      marginRight: "10px"
+      marginRight: "10px",
     },
     backButton: {
       padding: "10px 16px",
@@ -81,23 +88,23 @@ function ProjectDetails() {
       color: "white",
       borderRadius: "6px",
       cursor: "pointer",
-      fontSize: "16px"
+      fontSize: "16px",
     },
-    title: {
-      marginBottom: "20px",
-      color: "#333"
-    },
+    title: { marginBottom: "20px", color: "#333" },
     batchInfo: {
       marginBottom: "20px",
       fontWeight: "bold",
-      color: "#555"
-    }
+      color: "#555",
+      background: "#e3f2fd",
+      padding: "8px 12px",
+      borderRadius: "6px",
+    },
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>Add Project</h2>
+        <h2 style={styles.title}>Add / Update Project</h2>
 
         <p style={styles.batchInfo}>Batch: {batchName}</p>
 
@@ -113,7 +120,6 @@ function ProjectDetails() {
           <button onClick={saveProject} style={styles.saveButton}>
             Save Project
           </button>
-
           <button onClick={() => navigate(-1)} style={styles.backButton}>
             Back
           </button>
